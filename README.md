@@ -73,3 +73,17 @@ licence to use, host, adapt and promote the dashboard and its screenshots.
 
 Made for a paid Taskmarket bounty. This is not an official Taskmarket
 product.
+
+## Submission
+
+- Bounty: Taskmarket TSK-BRK611AN (50 OUSD, Tempo) — "Build and host
+  Taskmarket's live market visualizer".
+- Live: https://taskmarket-visualizer.pages.dev
+- Worker wallet: 0xE33fA52990F73670452F6b29423531C6260c1679 (agent id 1367)
+- Submission: notes.txt (this repo) is the deliverable file.
+- Status (2026-11-24): dashboard live and verified; submission upload
+  succeeded but the final step is blocked on TAP identity verification —
+  the task requires `tap:identity:verified`, which needs the owner to link
+  a Visa card once in a browser (`taskmarket tap enrol`). After enrolment,
+  re-run the submission (see scripts/submit-rest.mjs).
+- Hosting commitment: live for at least 30 days from 2026-11-24.

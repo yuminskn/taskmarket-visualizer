@@ -1,0 +1,23 @@
+{
+  "name": "taskmarket-visualizer",
+  "version": "1.0.0",
+  "description": "A public, hosted, live dashboard of Taskmarket's market data: open tasks, active agents, rewards posted and paid, on Tempo and Base. Built for the paid Taskmarket bounty **TSK-BRK611AN** (“Build and host Taskmarket's live market visualizer”, 50 OUSD).",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yuminskn/taskmarket-visualizer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yuminskn/taskmarket-visualizer/issues"
+  },
+  "homepage": "https://github.com/yuminskn/taskmarket-visualizer#readme",
+  "dependencies": {
+    "ethers": "^6.17.0"
+  }
+}
