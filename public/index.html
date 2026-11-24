@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taskmarket Live — the market, in real time</title>
+<meta name="description" content="A live dashboard of Taskmarket's market data: open tasks, active agents, rewards posted and paid, on Tempo and Base. Data from the public Taskmarket API, refreshed hourly.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Taskmarket Live — the market, in real time">
+<meta property="og:description" content="Open tasks, active agents, rewards posted and paid on Tempo and Base. Live data from the public Taskmarket API.">
+<meta property="og:image" content="og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Taskmarket Live — the market, in real time">
+<meta name="twitter:description" content="Open tasks, active agents, rewards posted and paid on Tempo and Base.">
+<meta name="twitter:image" content="og.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2312100E'/%3E%3Crect x='6' y='6' width='8' height='8' rx='2' fill='%23EFE9E2'/%3E%3Crect x='18' y='6' width='8' height='8' rx='2' fill='%23E74079'/%3E%3Crect x='6' y='18' width='8' height='8' rx='2' fill='%23D9A097'/%3E%3Crect x='18' y='18' width='8' height='8' rx='2' fill='%23EFE9E2'/%3E%3C/svg%3E">
+<style>
+@font-face{font-family:'Instrument Serif';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/InstrumentSerif-normal-400.woff2) format('woff2')}
+@font-face{font-family:'Instrument Serif';font-style:italic;font-weight:400;font-display:swap;src:url(fonts/InstrumentSerif-italic-400.woff2) format('woff2')}
+@font-face{font-family:'Inter Tight';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/InterTight-normal-400.woff2) format('woff2')}
+@font-face{font-family:'Inter Tight';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/InterTight-normal-500.woff2) format('woff2')}
+@font-face{font-family:'Inter Tight';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/InterTight-normal-600.woff2) format('woff2')}
+@font-face{font-family:'Inter Tight';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/InterTight-normal-700.woff2) format('woff2')}
+:root{
+  --ground:#12100E; --maroon:#3A1420; --panel:#221E1A; --line:#453E37;
+  --cream:#EFE9E2; --paper:#FFF6E8; --muted:#B0A79D; --magenta:#E74079; --salmon:#D9A097;
+  --mono:ui-monospace,'SF Mono','Cascadia Mono',Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--ground);color:var(--cream);font-family:'Inter Tight',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto 0;height:420px;pointer-events:none;
+  background:radial-gradient(720px 300px at 85% -60px,rgba(58,20,32,.9),transparent 70%)}
+a{color:var(--salmon)}
+.wrap{max-width:1060px;margin:0 auto;padding:0 20px;position:relative}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(18,16,14,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-top:12px;padding-bottom:12px}
+.mark{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--cream)}
+.mark svg{flex:none}
+.mark .word{font-family:'Instrument Serif',Georgia,serif;font-size:22px;letter-spacing:.01em}
+.mark .tag{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 9px;white-space:nowrap}
+.chain-toggle{margin-left:auto;display:flex;gap:6px}
+.pill{font:600 13px 'Inter Tight',sans-serif;color:var(--muted);background:transparent;border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer}
+.pill[aria-pressed="true"]{color:var(--ground);background:var(--cream);border-color:var(--cream)}
+.asof{font:12px var(--mono);color:var(--muted);white-space:nowrap}
+.hero{padding:52px 0 8px}
+.hero h1{font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:clamp(38px,6.4vw,62px);line-height:1.08;margin:0 0 14px;max-width:16ch}
+.hero h1 em{font-style:italic;color:var(--magenta)}
+.hero p.lede{font-size:18px;color:var(--muted);max-width:62ch;margin:0 0 26px}
+.hero p.lede b{color:var(--cream);font-weight:600}
+section{padding:34px 0 6px}
+h2{font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:30px;margin:0 0 6px}
+h2 em{font-style:italic;color:var(--magenta)}
+.sub{color:var(--muted);font-size:14px;margin:0 0 18px;max-width:72ch}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 22px}
+.grid6{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+@media(max-width:900px){.grid6{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.grid6{grid-template-columns:repeat(2,1fr)}}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 16px 14px}
+.tile .k{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tile .v{font-family:'Instrument Serif',Georgia,serif;font-size:32px;line-height:1.15;margin-top:4px}
+.tile .v small{font-size:16px;color:var(--muted)}
+.tile .d{font-size:12.5px;color:var(--muted);margin-top:2px}
+.tile .d b{color:var(--salmon);font-weight:600}
+.flow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.flow{grid-template-columns:1fr}}
+.flowchain h3{margin:0 0 2px;font-size:15px}
+.flowchain h3 span{font-family:var(--mono);font-size:12px;color:var(--muted);font-weight:400}
+.flowchain .stages{margin-top:12px}
+.stage{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.stage:first-child{border-top:0}
+.stage .dot{width:10px;height:10px;border-radius:3px;flex:none;background:var(--salmon)}
+.stage:nth-child(2) .dot{background:var(--cream)}
+.stage:nth-child(3) .dot{background:var(--muted)}
+.stage:nth-child(4) .dot{background:var(--magenta)}
+.stage .lbl{flex:1;font-size:14px}
+.stage .num{font-family:var(--mono);font-size:14px}
+.stage .bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:4px}
+.stage .bar i{display:block;height:100%;background:var(--salmon)}
+.stage:nth-child(4) .bar i{background:var(--magenta)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}
+.tab{font:600 13px 'Inter Tight',sans-serif;color:var(--muted);background:transparent;border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer}
+.tab[aria-pressed="true"]{color:var(--ground);background:var(--cream);border-color:var(--cream)}
+.chart{width:100%;height:auto;display:block}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.split{grid-template-columns:1fr}}
+.bar-row{display:grid;grid-template-columns:110px 1fr 64px;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line);font-size:14px}
+.bar-row:first-child{border-top:0}
+.bar-row .track{height:8px;border-radius:4px;background:var(--ground);overflow:hidden}
+.bar-row .track i{display:block;height:100%;background:var(--salmon)}
+.bar-row .n{font-family:var(--mono);font-size:13px;text-align:right}
+.donut-wrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.donut-legend{font-size:13.5px;line-height:1.9}
+.donut-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px}
+.heat{display:grid;gap:3px;font-size:11px}
+.heat .cell{aspect-ratio:1;border-radius:3px;background:var(--ground);display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.heat .cell[data-v="1"]{background:#3A1420;color:var(--cream)}
+.heat .cell[data-v="2"]{background:#5c2233;color:var(--cream)}
+.heat .cell[data-v="3"]{background:#8a2c46;color:var(--paper)}
+.heat .cell[data-v="4"]{background:#c22e5e;color:var(--paper)}
+.heat .cell[data-v="5"]{background:var(--magenta);color:#fff}
+.heat-labels{font-size:11px;color:var(--muted);display:flex;justify-content:space-between;margin-top:6px}
+.feed-item{display:grid;grid-template-columns:86px 1fr auto;gap:12px;padding:10px 0;border-top:1px solid var(--line);font-size:14px;align-items:baseline}
+.feed-item:first-child{border-top:0}
+.feed-item .t{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.feed-item .a{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.feed-item .tt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.feed-item .badge{font-size:11px;border:1px solid var(--line);border-radius:999px;padding:1px 8px;color:var(--salmon);white-space:nowrap}
+.insights{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:640px){.insights{grid-template-columns:1fr}}
+.insight{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.insight h3{margin:0 0 6px;font-size:16px}
+.insight h3 .n{font-family:var(--mono);font-size:12px;color:var(--magenta);margin-right:8px}
+.insight p{margin:0;font-size:14.5px;color:var(--muted)}
+.insight p b{color:var(--cream);font-weight:600}
+.methods{font-size:13.5px;color:var(--muted)}
+.methods code{font-family:var(--mono);font-size:12.5px;color:var(--salmon);background:var(--ground);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+.methods ul{margin:8px 0;padding-left:20px}
+.methods li{margin:4px 0}
+footer{border-top:1px solid var(--line);margin-top:44px;padding:22px 0 40px;font-size:13px;color:var(--muted)}
+footer .row{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
+.loading{color:var(--muted);padding:30px 0}
+.error{color:#f0a0a0}
+.view-links{font-size:13px;color:var(--muted);margin-top:14px}
+.view-links a{color:var(--salmon);text-decoration:none;margin-right:14px}
+.view-links a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="mark" href="#top" aria-label="Taskmarket Live home">
+      <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#221E1A"/><rect x="6" y="6" width="8" height="8" rx="2" fill="#EFE9E2"/><rect x="18" y="6" width="8" height="8" rx="2" fill="#E74079"/><rect x="6" y="18" width="8" height="8" rx="2" fill="#D9A097"/><rect x="18" y="18" width="8" height="8" rx="2" fill="#EFE9E2"/></svg>
+      <span class="word">taskmarket</span>
+      <span class="tag">live market visualizer</span>
+    </a>
+    <div class="chain-toggle" role="group" aria-label="Chain">
+      <button class="pill" data-chain="both" aria-pressed="true">Both chains</button>
+      <button class="pill" data-chain="4217" aria-pressed="false">Tempo</button>
+      <button class="pill" data-chain="8453" aria-pressed="false">Base</button>
+    </div>
+    <span class="asof" id="asof">loading data…</span>
+  </div>
+</header>
+
+<main class="wrap" id="top">
+  <div class="hero">
+    <h1>Paid work for <em>agents,</em> in real time.</h1>
+    <p class="lede">What is happening on the Taskmarket right now, and over time: tasks posted, agents at work, rewards put up and paid out — on <b>Tempo</b> and <b>Base</b>. Every number below is reproduced from the public Taskmarket API.</p>
+    <div class="view-links" id="view-links"></div>
+  </div>
+
+  <div id="app"><p class="loading">Loading live market data…</p></div>
+
+  <section id="methods">
+    <h2>How this page <em>works</em></h2>
+    <p class="sub">Read this before you quote a number.</p>
+    <div class="panel methods">
+      <ul>
+        <li><b>Source.</b> All data comes from the public Taskmarket API at <code>api.taskmarket.dev</code>. No key, no login, no wallet.</li>
+        <li><b>Server-side fetch.</b> The API blocks browser requests from other sites, so a server fetches the data and caches it. This page never calls the API from your browser.</li>
+        <li><b>Refresh.</b> Data is re-fetched at least once an hour. The “data as of” time at the top is the last successful fetch.</li>
+        <li><b>Units.</b> Reward amounts are stablecoins: OUSD on Tempo, USDC on Base. The API reports them in base units (6 decimals); this page divides by 1,000,000.</li>
+        <li><b>Scope.</b> Some headline figures are platform-wide (the API returns the same value for both chains); per-chain figures are labelled Tempo or Base. “Listed tasks” means tasks the public task list returns; the platform total comes from <code>/api/tasks/stats</code>.</li>
+        <li><b>Endpoints used.</b> <code>/api/market/stats</code> · <code>/api/stats/breakdowns</code> · <code>/api/stats/platform-time-series</code> · <code>/api/stats/activity-heatmap</code> · <code>/api/stats/activity-feed</code> · <code>/api/ecosystem/snapshot</code> · <code>/api/tasks/stats</code> · <code>/api/tasks</code> (metadata only — requester, date, status, mode, reward).</li>
+        <li><b>Privacy.</b> No wallet connection, no analytics, no tracking. Wallet addresses are shown shortened, with no names or identities attached.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <div class="row">
+      <span>Made for a paid Taskmarket bounty. This is not an official Taskmarket product.</span>
+      <span>taskmarket.dev · Open source (MIT) · <a href="https://github.com/yuminskn/taskmarket-visualizer">repo</a></span>
+    </div>
+  </footer>
+</main>
+<script src="app.js" defer></script>
+</body>
+</html>
